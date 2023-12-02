@@ -1,0 +1,46 @@
+- name: Configuring metadata_agent.ini file
+  copy:
+    src: metadata_agent.ini
+    dest: /etc/neutron/metadata_agent.ini
+    owner: root
+    group: neutron
+    mode: 640
+
+- name: Configuring nova.conf file
+  copy:
+    src: nova.conf
+    dest: /etc/nova/nova.conf
+    owner: root
+    group: nova
+    mode: 640
+
+- name: Creating a link
+  command: ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+  failed_when: false
+  no_log: true
+
+- name: Populating the database
+  become_user: root
+  command: su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
+  failed_when: false
+  no_log: true
+
+- name: Restarting the nova-api service
+  service:
+    name: openstack-nova-api.service
+    state: restarted
+  failed_when: false
+  no_log: true
+
+- name: Starting and enabling the Networking services
+  service:
+    name: 
+      - neutron-server.service
+      - neutron-linuxbridge-agent
+      - neutron-dhcp-agent
+      - neutron-metadata-agent
+    state: started
+    enabled: true 
+  failed_when: false
+  no_log: true
+

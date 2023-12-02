@@ -1,0 +1,45 @@
+- name: Creating neutron database
+  mysql_query:
+    login_user: root
+    login_password: mysqlpass
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    query:
+      - CREATE DATABASE neutron;
+      - GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' IDENTIFIED BY 'neutronpass';
+      - GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' IDENTIFIED BY 'neutronpass';
+    single_transaction: yes
+  failed_when: false
+  no_log: true
+
+- name: Sourcing the admin credentials
+  command: source /home/cserver/admin-openrc
+  failed_when: false
+  no_log: true
+
+- name: Creating neutron user
+  become_user: root
+  expect:
+    command: openstack user create --domain default --password-prompt neutron
+    reponses:
+      "User Password": neutronpass
+      "Repeat User Password": neutronpass
+  failed_when: false
+  no_log: true
+
+- name: Adding admin roles to the neutron user
+  command: openstack role add --project service --user neutron admin
+  failed_when: false
+  no_log: true
+
+- name: Creating neutron service entity
+  command: openstack service create --name neutron --description "OpenStack Networking" network
+  failed_when: false
+  no_log: true
+
+- name: Creating the network service API endpoints
+  shell: |
+    openstack endpoint create --region RegionOne network public http://controller:9696
+    openstack endpoint create --region RegionOne network internal http://controller:9696
+    openstack endpoint create --region RegionOne network admin http://controller:9696
+  failed_when: false
+  no_log: true

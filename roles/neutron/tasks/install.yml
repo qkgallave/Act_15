@@ -1,0 +1,7 @@
+- name: Installing neutron and its dependencies
+  yum:
+    name:
+      - openstack-neutron 
+      - openstack-neutron-ml2 
+      - openstack-neutron-linuxbridge 
+      - ebtables

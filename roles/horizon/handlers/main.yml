@@ -1,0 +1,8 @@
+- name: Restarting httpd and memcached
+  service:
+    name: 
+      - httpd
+      - memcached
+    state: restarted
+  failed_when: false
+  no_log: true

@@ -1,0 +1,6 @@
+- name: Installing cinder
+  yum:
+    name: openstack-cinder
+
+
+

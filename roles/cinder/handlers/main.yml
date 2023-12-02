@@ -1,0 +1,6 @@
+- name: Restarting nova
+  service:
+    name: openstack-nova-api.service 
+  failed_when: false
+  no_log: true
+

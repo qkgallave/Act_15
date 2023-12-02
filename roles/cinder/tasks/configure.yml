@@ -1,0 +1,35 @@
+- name: Configuring cinder config file
+  copy:
+    src: cinder.conf
+    dest: /etc/cinder/cinder.conf
+    owner: root
+    group: cinder
+    mode: 0640
+
+- name: Configuring nova config file
+  copy:
+    src: nova.conf
+    dest: /etc/nova/nova.conf
+    owner: root
+    group: nova
+    mode: 640
+
+  notify: Restarting nova
+
+- name: Populating the Block Storage database
+  become_user: root
+  command: su -s /bin/sh -c "cinder-manage db sync" cinder
+  failed_when: false
+  no_log: true
+
+- name: Starting and enabling cinder service
+  service:
+    name:
+      - openstack-cinder-api.service 
+      - openstack-cinder-scheduler.service
+    state: started
+    enabled: true
+  failed_when: false
+  no_log: true
+
+
